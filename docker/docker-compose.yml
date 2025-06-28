@@ -1,0 +1,87 @@
+services:
+  php:
+    platform: linux/amd64
+    build: .
+    container_name: php_${APP_ID}
+    working_dir: /var/www/html
+    volumes:
+      - ../www/${APP_ID}/wp:/var/www/html
+      - ../composer:/tmp/composer 
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ${DB_NAME}
+      WORDPRESS_DB_USER: ${DB_USER}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${APP_ID}.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.services.${APP_ID}.loadbalancer.server.port=80"
+    depends_on:
+      - db
+    networks:
+      - web
+
+  db:
+    platform: linux/amd64
+    image: mariadb:${MARIADB_VERSION}
+    container_name: db_${APP_ID}
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ../www/${APP_ID}/mysql:/var/lib/mysql
+    networks:
+      - web
+
+  phpmyadmin:
+    platform: linux/amd64
+    image: phpmyadmin/phpmyadmin:${PHPMYADMIN_VERSION}
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pma.rule=Host(`phpmyadmin.test`)"
+      - "traefik.http.services.pma.loadbalancer.server.port=80"
+    depends_on:
+      - db
+    networks:
+      - web
+
+  mailhog:
+    platform: linux/amd64
+    image: mailhog/mailhog
+    container_name: mailhog
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailhog.rule=Host(`mailhog.test`)"
+      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+    ports:
+      - "8025:8025"
+    networks:
+      - web
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../traefik/traefik.yml:/etc/traefik/traefik.yml
+    networks:
+      - web
+
+networks:
+  web:
+    external: false

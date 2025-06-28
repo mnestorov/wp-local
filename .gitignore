@@ -1,0 +1,22 @@
+# Composer cache
+/composer/*
+!/composer/.gitkeep
+
+# Docker
+/db_data/
+
+# Node/npm
+node_modules/
+
+# IDEs
+.idea
+.vscode
+
+# OS
+.DS_Store
+
+# Env files
+.env
+
+# WordPress projects - exclude entire www directory
+/www/
