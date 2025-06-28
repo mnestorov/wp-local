@@ -2,9 +2,42 @@
 
 A complete Docker-based WordPress local development environment with automatic project setup, WP-CLI integration, and convenient aliases.
 
+## 🛠️ Tools & Technologies
+
+### Core Technologies
+
+- **Docker** - Containerization platform for consistent development environments
+- **Docker Compose** - Multi-container Docker applications
+- **Traefik** - Reverse proxy and load balancer for automatic routing
+- **MariaDB** - Database server (MySQL-compatible)
+- **PHP** - Server-side scripting language with Apache web server
+- **WP-CLI** - Command-line interface for WordPress
+
+### Development Tools
+
+- **Composer** - PHP dependency management
+- **GitHub Authentication** - For private repository access
+- **MailHog** - Email testing and development
+- **phpMyAdmin** - Database administration interface
+
+### WordPress Ecosystem
+
+- **WordPress Core** - Latest stable version (6.5+)
+- **Query Monitor** - WordPress debugging and performance monitoring
+- **WP Crontrol** - WordPress cron job management
+- **Custom Admin Colors Plugin** - WordPress admin interface customization
+
+### System Requirements
+
+- **Docker Desktop** - For Windows/macOS users
+- **Docker Engine** - For Linux users
+- **Bash Shell** - For script execution
+- **Git** - Version control (optional but recommended)
+
 ## 🚀 Quick Start
 
 1. **Create a new project:**
+
    ```bash
    cd wp-local
    ./scripts/new-project.sh
@@ -24,6 +57,7 @@ This environment supports **multiple WordPress projects** simultaneously:
 - **No conflicts** - Projects don't interfere with each other
 
 **Example:**
+
 ```bash
 # Create first project
 ./scripts/new-project.sh  # Enter: myblog
@@ -40,7 +74,7 @@ wpup-ecommerce
 
 ## 📁 Project Structure
 
-```
+```text
 wp-local/
 ├── docker/
 │   ├── docker-compose.yml    # Docker services configuration
@@ -169,12 +203,14 @@ docker exec -it php_[project] wp --allow-root
 ### Common Issues
 
 1. **Port 80 already in use:**
+
    ```bash
    sudo lsof -i :80
    # Stop the conflicting service
    ```
 
 2. **Database connection errors:**
+
    ```bash
    wpclean-[project]
    wpup-[project]
@@ -192,6 +228,7 @@ docker exec -it php_[project] wp --allow-root
    - The script will continue even if some plugins fail to install
 
 5. **Domain not resolving:**
+
    ```bash
    # Check if domain is in /etc/hosts
    cat /etc/hosts | grep [project].test
