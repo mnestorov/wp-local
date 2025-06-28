@@ -217,9 +217,9 @@ wpcli-[project] core is-installed
 
 Every new project automatically includes:
 
-- **Query Monitor** - Performance and debugging
-- **WP Crontrol** - Cron job management
-- **Smarty Change Admin Colors** - Custom admin theme
+- **[Query Monitor](https://wordpress.org/plugins/query-monitor/)** - Performance and debugging
+- **[WP Crontrol](https://wordpress.org/plugins/wp-crontrol/)** - Cron job management
+- **[Smarty Change Admin Colors](https://github.com/mnestorov/smarty-change-admin-colors)** - Custom plugin
 
 ## 🔐 Security Notes
 
