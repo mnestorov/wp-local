@@ -45,7 +45,15 @@ A complete Docker-based WordPress local development environment with automatic p
 
 2. **Enter your project name** when prompted (e.g., `myproject`)
 
-3. **Visit your site:** `http://myproject.test`
+3. **Reload your shell configuration** to activate the aliases:
+
+   ```bash
+   source ~/.zshrc  # For zsh users
+   # OR
+   source ~/.bashrc  # For bash users
+   ```
+
+4. **Visit your site:** `http://myproject.test`
 
 ## 🔧 Multi-Project Setup
 
@@ -232,6 +240,18 @@ docker exec -it php_[project] wp --allow-root
    ```bash
    # Check if domain is in /etc/hosts
    cat /etc/hosts | grep [project].test
+   ```
+
+6. **Aliases not working:**
+
+   ```bash
+   # Reload your shell configuration
+   source ~/.zshrc  # For zsh users
+   # OR
+   source ~/.bashrc  # For bash users
+   
+   # Verify aliases are loaded
+   alias | grep wpcli-[project]
    ```
 
 ### Debug Commands
