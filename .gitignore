@@ -17,6 +17,9 @@ node_modules/
 
 # Env files
 .env
+docker/.env
+docker/.env.laravel
+docker/.env.wordpress
 
 # WordPress projects - exclude entire www directory
 /www/

@@ -1,0 +1,89 @@
+FROM php:8.3-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    libcurl4-openssl-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libicu-dev \
+    locales \
+    nginx \
+    supervisor \
+    unzip \
+    vim \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure intl \
+    && docker-php-ext-install -j$(nproc) \
+    bcmath \
+    curl \
+    dom \
+    exif \
+    gd \
+    intl \
+    mbstring \
+    pdo \
+    pdo_mysql \
+    xml \
+    zip \
+    opcache
+
+# Install Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Install Node.js (for asset compilation)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs
+
+# Create a non-root user
+RUN useradd -m -s /bin/bash laravel \
+    && mkdir -p /var/www/html \
+    && chown -R laravel:laravel /var/www/html \
+    && mkdir -p /var/log \
+    && chown -R laravel:laravel /var/log \
+    && mkdir -p /var/run \
+    && chown -R laravel:laravel /var/run \
+    && touch /var/run/nginx.pid \
+    && chown laravel:laravel /var/run/nginx.pid
+
+# Configure nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/sites-available/default
+RUN chown -R laravel:laravel /etc/nginx \
+    && chown -R laravel:laravel /var/log/nginx \
+    && chown -R laravel:laravel /var/lib/nginx
+
+# Configure php-fpm
+RUN echo "user = laravel" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "group = laravel" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "listen.owner = laravel" >> /usr/local/etc/php-fpm.d/www.conf \
+    && echo "listen.group = laravel" >> /usr/local/etc/php-fpm.d/www.conf
+
+# Configure supervisor
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN chown -R laravel:laravel /etc/supervisor
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Switch to non-root user
+USER laravel
+
+EXPOSE 80
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

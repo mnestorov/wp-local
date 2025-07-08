@@ -1,0 +1,114 @@
+services:
+  laravel:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.laravel
+    container_name: laravel_${APP_ID}
+    working_dir: /var/www/html
+    volumes:
+      - ../www/${APP_ID}:/var/www/html
+      - ./default.conf:/etc/nginx/sites-available/default
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_NAME}
+      DB_USERNAME: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MAIL_MAILER: smtp
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: null
+      MAIL_PASSWORD: null
+      MAIL_ENCRYPTION: null
+      MAIL_FROM_ADDRESS: noreply@${PROJECT_DOMAIN}
+      MAIL_FROM_NAME: ${APP_ID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${APP_ID}.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.services.${APP_ID}.loadbalancer.server.port=80"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - web
+
+  db:
+    platform: linux/amd64
+    image: mariadb:${MARIADB_VERSION}
+    container_name: db_${APP_ID}
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ../www/${APP_ID}/mysql:/var/lib/mysql
+    networks:
+      - web
+
+  redis:
+    platform: linux/amd64
+    image: redis:7-alpine
+    container_name: redis_${APP_ID}
+    restart: always
+    volumes:
+      - ../www/${APP_ID}/redis:/data
+    networks:
+      - web
+
+  phpmyadmin:
+    platform: linux/amd64
+    image: phpmyadmin/phpmyadmin:${PHPMYADMIN_VERSION}
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pma.rule=Host(`phpmyadmin.test`)"
+      - "traefik.http.services.pma.loadbalancer.server.port=80"
+    depends_on:
+      - db
+    networks:
+      - web
+
+  mailhog:
+    platform: linux/amd64
+    image: mailhog/mailhog
+    container_name: mailhog
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailhog.rule=Host(`mailhog.test`)"
+      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+    ports:
+      - "8025:8025"
+    networks:
+      - web
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../traefik/traefik.yml:/etc/traefik/traefik.yml
+    networks:
+      - web
+
+networks:
+  web:
+    external: false

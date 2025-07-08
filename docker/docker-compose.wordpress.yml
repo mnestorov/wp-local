@@ -1,7 +1,9 @@
 services:
   php:
     platform: linux/amd64
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.wordpress
     container_name: php_${APP_ID}
     working_dir: /var/www/html
     volumes:
