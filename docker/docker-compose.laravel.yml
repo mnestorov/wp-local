@@ -11,6 +11,7 @@ services:
       - ./default.conf:/etc/nginx/sites-available/default
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+      - ./php-uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     environment:
       DB_CONNECTION: mysql
       DB_HOST: db
