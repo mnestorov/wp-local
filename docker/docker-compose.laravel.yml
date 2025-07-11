@@ -49,6 +49,8 @@ services:
       MYSQL_DATABASE: ${DB_NAME}
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
     volumes:
       - ../www/${APP_ID}/mysql:/var/lib/mysql
     networks:
@@ -90,6 +92,7 @@ services:
       - "traefik.http.routers.mailhog.rule=Host(`mailhog.test`)"
       - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
     ports:
+      - "1025:1025"
       - "8025:8025"
     networks:
       - web
