@@ -623,6 +623,47 @@ docker-compose up --build -d
 
 ---
 
+## 📋 Versioning & Releases
+
+This project follows [Semantic Versioning](https://semver.org/) and uses automated releases via [semantic-release](https://github.com/semantic-release/semantic-release).
+
+### Version Format
+- **Major** (X.0.0): Breaking changes
+- **Minor** (0.X.0): New features, backwards compatible
+- **Patch** (0.0.X): Bug fixes, backwards compatible
+
+### Automated Releases
+Releases are automatically created when changes are pushed to the `main` branch. The version number is determined by analyzing commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+### Commit Message Format
+```bash
+# Features (minor version bump)
+feat(docker): add Redis service for caching
+
+# Bug fixes (patch version bump)
+fix: resolve MySQL connection timeout
+
+# Breaking changes (major version bump)
+feat(docker)!: upgrade to PHP 8.3
+```
+
+For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please follow our commit message conventions to ensure proper versioning:
+
+1. Use conventional commits format: `type(scope): description`
+2. Run `npm run commit` for an interactive commit experience
+3. Create feature branches and submit pull requests
+4. Automated tests and releases run on merge to main
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
 **Happy Development! 🚀**
 
 *This environment supports both WordPress and Laravel development with automatic project detection, intelligent environment configuration, and streamlined workflows for modern PHP development.*
