@@ -8,9 +8,9 @@ A complete Docker-based local development environment supporting both **WordPres
 
 - **Docker** - Containerization platform for consistent development environments
 - **Docker Compose** - Multi-container Docker applications
-- **Traefik** - Reverse proxy and load balancer for automatic routing
-- **MariaDB** - Database server (MySQL-compatible)
-- **PHP** - Server-side scripting language
+- **Traefik v3.2** - Modern reverse proxy and load balancer for automatic routing
+- **MariaDB 11.6** - Latest LTS database server (MySQL-compatible)
+- **PHP 8.4** - Latest PHP version with improved performance and features
 - **Nginx** - Web server (for Laravel projects)
 - **Apache** - Web server (for WordPress projects)
 
@@ -18,10 +18,10 @@ A complete Docker-based local development environment supporting both **WordPres
 
 - **Composer** - PHP dependency management
 - **GitHub Authentication** - For private repository access
-- **MailHog** - Email testing and development
+- **Mailpit** - Modern email testing and development tool
 - **phpMyAdmin** - Database administration interface
 - **WP-CLI** - Command-line interface for WordPress
-- **Redis** - In-memory data structure store (for Laravel projects)
+- **Redis 7.4** - In-memory data structure store (for Laravel projects)
 
 ### Supported Frameworks
 

@@ -22,7 +22,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       MAIL_MAILER: smtp
-      MAIL_HOST: mailhog
+      MAIL_HOST: mailpit
       MAIL_PORT: 1025
       MAIL_USERNAME: null
       MAIL_PASSWORD: null
@@ -41,7 +41,7 @@ services:
 
   db:
     platform: linux/amd64
-    image: mariadb:${MARIADB_VERSION}
+    image: mariadb:11.6
     container_name: db_${APP_ID}
     restart: always
     environment:
@@ -58,7 +58,7 @@ services:
 
   redis:
     platform: linux/amd64
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: redis_${APP_ID}
     restart: always
     volumes:
@@ -68,7 +68,7 @@ services:
 
   phpmyadmin:
     platform: linux/amd64
-    image: phpmyadmin/phpmyadmin:${PHPMYADMIN_VERSION}
+    image: phpmyadmin/phpmyadmin:5.2
     container_name: phpmyadmin
     environment:
       PMA_HOST: db
@@ -85,12 +85,12 @@ services:
 
   mailhog:
     platform: linux/amd64
-    image: mailhog/mailhog
-    container_name: mailhog
+    image: axllent/mailpit:latest
+    container_name: mailpit
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mailhog.rule=Host(`mailhog.test`)"
-      - "traefik.http.services.mailhog.loadbalancer.server.port=8025"
+      - "traefik.http.routers.mailpit.rule=Host(`mailpit.test`)"
+      - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
     ports:
       - "1025:1025"
       - "8025:8025"
@@ -98,7 +98,7 @@ services:
       - web
 
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.2
     container_name: traefik
     command:
       - "--api.insecure=true"

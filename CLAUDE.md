@@ -94,16 +94,20 @@ Each module contains:
 - `Resources/views/` - Blade templates
 
 **Key Technologies**:
+- PHP 8.4 with latest performance improvements
 - Laravel 12 with Livewire 3.6 for reactive components
 - Pest for testing (PHPUnit wrapper with better syntax)
 - Laravel Pint for PHP code style
 - Vite for asset compilation
 - Bootstrap 5.3 + Alpine.js for frontend
+- MariaDB 11.6 LTS for database
+- Redis 7.4 for caching and sessions
+- Traefik v3.2 for reverse proxy
 
 ### Service Access URLs
 - Projects: `http://{project-name}.test`
 - phpMyAdmin: `http://phpmyadmin.test`
-- MailHog: `http://mailhog.test`
+- Mailpit: `http://mailpit.test`
 - Traefik Dashboard: `http://localhost:8080`
 
 ### Database Configuration

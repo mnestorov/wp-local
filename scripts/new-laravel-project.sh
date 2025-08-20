@@ -88,7 +88,7 @@ REDIS_PASSWORD=null
 REDIS_PORT=6379
 
 MAIL_MAILER=smtp
-MAIL_HOST=mailhog
+MAIL_HOST=mailpit
 MAIL_PORT=1025
 MAIL_USERNAME=null
 MAIL_PASSWORD=null
@@ -124,7 +124,7 @@ cd ..
 #  STEP 5  •  /etc/hosts
 # ──────────────────────────────────────────────────────────────────────────────
 echo "📌  Updating /etc/hosts"
-for d in "$PROJECT_DOMAIN" phpmyadmin.test mailhog.test; do
+for d in "$PROJECT_DOMAIN" phpmyadmin.test mailpit.test; do
   sudo grep -q "$d" /etc/hosts || echo "127.0.0.1 $d" | sudo tee -a /etc/hosts
 done
 
@@ -251,7 +251,7 @@ echo "🌐  Available Systems:"
 echo "   • Laravel Application: http://${PROJECT_DOMAIN}"
 echo "   • Traefik Dashboard:   http://localhost:8080"
 echo "   • phpMyAdmin:          http://phpmyadmin.test"
-echo "   • MailHog:             http://mailhog.test"
+echo "   • Mailpit:             http://mailpit.test"
 echo ""
 echo "📝  Notes:"
 echo "   • Database name:       ${DB_NAME}"
