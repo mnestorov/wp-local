@@ -55,9 +55,9 @@ npm run build  # Production build
 ### WordPress Development
 ```bash
 # WP-CLI commands (container-based)
-docker exec -it php_<project> wp --allow-root user list
-docker exec -it php_<project> wp --allow-root plugin list
-docker exec -it php_<project> wp --allow-root core update
+docker exec -it php_{project-name} wp --allow-root user list
+docker exec -it php_{project-name} wp --allow-root plugin list
+docker exec -it php_{project-name} wp --allow-root core update
 
 # Composer operations
 composer install  # Install WordPress core and plugins
@@ -103,12 +103,18 @@ Each module contains:
 - MariaDB 11.6 LTS for database
 - Redis 7.4 for caching and sessions
 - Traefik v3.2 for reverse proxy
+- Adminer 5.3 for database administration
+- Elasticsearch 7.17 for search and analytics
+- Kibana 7.17 for Elasticsearch visualization
 
 ### Service Access URLs
 - Projects: `http://{project-name}.test`
 - phpMyAdmin: `http://phpmyadmin.test`
+- Adminer: `http://adminer.test`
 - Mailpit: `http://mailpit.test`
+- Kibana: `http://kibana-{project-name}.test`
 - Traefik Dashboard: `http://localhost:8080`
+- Elasticsearch: `http://localhost:9200` (Laravel) / `http://localhost:9201` (WordPress)
 
 ### Database Configuration
 - Root access: root/root
@@ -161,12 +167,93 @@ This repository uses automated semantic versioning with conventional commits:
 - `refactor`: Code restructuring
 - `test`: Test additions/changes
 
+## Service Integration
+
+### Elasticsearch Usage
+
+#### Initial Elasticsearch Setup
+```bash
+# Check Elasticsearch cluster health (with authentication)
+curl -u elastic:changeme http://localhost:9200/_cluster/health?pretty
+
+# Check cluster status (quick view)
+curl -u elastic:changeme http://localhost:9200/_cat/health
+
+# View all indices
+curl -u elastic:changeme http://localhost:9200/_cat/indices
+```
+
+**Security Enabled**: Elasticsearch 7.17 with authentication for Fleet and Agent integrations.
+**Default Credentials**: Username: `elastic`, Password: `changeme`
+
+#### Laravel Integration
+```bash
+# Install Laravel Scout for Elasticsearch
+docker exec -it laravel_{project-name} composer require laravel/scout
+docker exec -it laravel_{project-name} composer require matchish/laravel-scout-elasticsearch
+
+# Configure in Laravel .env
+SCOUT_DRIVER=elasticsearch
+ELASTICSEARCH_HOST=elasticsearch:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=changeme
+
+# Create and sync searchable models
+docker exec -it laravel_{project-name} php artisan scout:import "App\Models\Post"
+```
+
+#### WordPress Integration
+```bash
+# Install ElasticPress plugin
+docker exec -it php_{project-name} wp --allow-root plugin install elasticpress --activate
+
+# Configure Elasticsearch endpoint in WordPress admin:
+# Settings > ElasticPress > Settings
+# Host: http://elasticsearch:9200
+# Username: elastic
+# Password: changeme
+
+# Index content via WP-CLI
+docker exec -it php_{project-name} wp --allow-root elasticpress index --setup
+```
+
+### Adminer vs phpMyAdmin
+- **Adminer**: Lightweight, faster, supports multiple databases
+- **phpMyAdmin**: Feature-rich, WordPress-friendly
+- Both access the same databases - use whichever you prefer
+
+### Kibana Analytics
+- Monitor application logs and metrics
+- Create dashboards for search analytics
+- Track user behavior and performance
+
+#### Kibana Setup & Access
+```bash
+# Access Kibana with authentication
+# URL: http://kibana-{project-name}.test
+# Username: elastic
+# Password: changeme
+
+# View Kibana logs for debugging
+docker logs kibana_{project-name}
+
+# Check Elasticsearch connection from Kibana container
+docker exec -it kibana_{project-name} curl -u elastic:changeme http://elasticsearch:9200/_cluster/health
+```
+
+**Security Enabled**: Authentication required for Kibana access. Fleet management now available for Elastic Agent integrations.
+
 ## Important Notes
 
 1. **Queue Worker Required**: For Laravel projects with email/notifications, always run `php artisan queue:listen --tries=1`
 2. **Environment Files**: Docker setup uses template files (`.env.wordpress`, `.env.laravel`) with automatic variable substitution
 3. **Volume Mounts**: All project files are mounted, changes reflect immediately
-4. **Container Names**: Follow pattern `{service}_{project}` (e.g., `php_karmkrag`, `nginx_smartylaravel`)
+4. **Container Names**: Follow pattern `{service}_{project}` (e.g., `php_myapp`, `nginx_smartylaravel`)
 5. **Traefik Routing**: Automatic SSL and routing based on project name
 6. **Development Only**: This setup is optimized for local development, not production
 7. **Excluded from Git**: The `www/` directory is gitignored - individual projects should have their own repositories
+8. **Elasticsearch Data**: Persisted in `www/{project}/elasticsearch/` directory
+9. **Memory Usage**: Elasticsearch is configured with 512MB heap size for development
+10. **Elasticsearch Security**: Security is enabled (`xpack.security.enabled=true`) for Fleet and Agent integrations
+11. **Kibana Access**: Requires authentication at `http://kibana-{project-name}.test` (elastic/changeme)
+12. **Fleet Management**: Available for Elastic Agent integrations with API key authentication enabled

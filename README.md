@@ -8,8 +8,8 @@ A complete Docker-based local development environment supporting both **WordPres
 
 - **Docker** - Containerization platform for consistent development environments
 - **Docker Compose** - Multi-container Docker applications
-- **Traefik v3.2** - Modern reverse proxy and load balancer for automatic routing
-- **MariaDB 11.6** - Latest LTS database server (MySQL-compatible)
+- **Traefik** - Modern reverse proxy and load balancer for automatic routing
+- **MariaDB** - Latest LTS database server (MySQL-compatible)
 - **PHP 8.4** - Latest PHP version with improved performance and features
 - **Nginx** - Web server (for Laravel projects)
 - **Apache** - Web server (for WordPress projects)
@@ -20,8 +20,11 @@ A complete Docker-based local development environment supporting both **WordPres
 - **GitHub Authentication** - For private repository access
 - **Mailpit** - Modern email testing and development tool
 - **phpMyAdmin** - Database administration interface
+- **Adminer** - Lightweight database administration tool
+- **Elasticsearch** - Search and analytics engine
+- **Kibana** - Elasticsearch data visualization
 - **WP-CLI** - Command-line interface for WordPress
-- **Redis 7.4** - In-memory data structure store (for Laravel projects)
+- **Redis** - In-memory data structure store (for Laravel projects)
 
 ### Supported Frameworks
 
@@ -112,8 +115,8 @@ Environment files (`.env`) contain configuration variables that customize your D
 | `DB_NAME` | Database name | `smartyapp` |
 | `DB_USER` | Database user | `smartyapp` |
 | `DB_PASSWORD` | Database password | `smartyapp` |
-| `PHP_VERSION` | PHP Docker image version | `8.3-apache` |
-| `MARIADB_VERSION` | MariaDB version | `10.11` |
+| `PHP_VERSION` | PHP Docker image version | `8.4-apache` |
+| `MARIADB_VERSION` | MariaDB version | `11.6` |
 | `GITHUB_AUTH_TOKEN` | GitHub authentication | `ghp_xyz123...` |
 
 ## 📁 Project Structure
@@ -136,12 +139,14 @@ wp-local/
 │   ├── smartyapp/                   # WordPress project
 │   │   ├── wp/                      # WordPress core files
 │   │   ├── mysql/                   # Database files
+│   │   ├── elasticsearch/           # Search index data
 │   │   └── composer.json            # WordPress dependencies
 │   └── smartylaravel/               # Laravel project
 │       ├── app/                     # Laravel application
 │       ├── public/                  # Public web directory
 │       ├── mysql/                   # Database files
 │       ├── redis/                   # Redis data
+│       ├── elasticsearch/           # Search index data
 │       └── composer.json            # Laravel dependencies
 └── README.md                        # This documentation
 ```
@@ -165,8 +170,11 @@ The setup script automatically detects your project type:
 | Service | WordPress URL | Laravel URL | Description |
 |---------|---------------|-------------|-------------|
 | Your Site | `http://smartyapp.test` | `http://smartylaravel.test` | Your application |
-| phpMyAdmin | `http://phpmyadmin.test` | `http://phpmyadmin.test` | Database management |
-| MailHog | `http://mailhog.test` | `http://mailhog.test` | Email testing |
+| phpMyAdmin | `http://phpmyadmin.test` | `http://phpmyadmin.test` | Database management (full-featured) |
+| Adminer | `http://adminer.test` | `http://adminer.test` | Database management (lightweight) |
+| Mailpit | `http://mailpit.test` | `http://mailpit.test` | Email testing and debugging |
+| Kibana | `http://kibana-smartyapp.test` | `http://kibana-smartylaravel.test` | Elasticsearch visualization |
+| Elasticsearch | `http://localhost:9201` | `http://localhost:9200` | Search and analytics API |
 | Traefik Dashboard | `http://localhost:8080` | `http://localhost:8080` | Proxy management |
 
 ## 🔧 Setup Script Usage
@@ -350,23 +358,26 @@ MAIL_DRIVER=smtp
 ## 🛠️ Container Architecture
 
 ### WordPress Container (docker-php)
-- **Base**: `php:8.3-apache`
+- **Base**: `php:8.4-apache`
 - **Services**: Apache, PHP, WP-CLI
-- **Volumes**: WordPress files, database, uploads
+- **Volumes**: WordPress files, database, uploads, elasticsearch data
 - **Networking**: Traefik routing
 
 ### Laravel Container (docker-laravel)
-- **Base**: `php:8.3-fpm`
+- **Base**: `php:8.4-fpm`
 - **Services**: Nginx, PHP-FPM, Supervisor
-- **Volumes**: Laravel application, database, storage
+- **Volumes**: Laravel application, database, storage, elasticsearch data
 - **Networking**: Traefik routing, Redis connection
 
 ### Shared Services
-- **MariaDB**: Database server
-- **Redis**: Caching and sessions (Laravel)
-- **Traefik**: Reverse proxy and SSL termination
-- **phpMyAdmin**: Database management interface
-- **MailHog**: Email testing and debugging
+- **MariaDB 11.6**: Database server
+- **Redis 7.4**: Caching and sessions (Laravel)
+- **Traefik v3.2**: Reverse proxy and SSL termination
+- **phpMyAdmin 5.2**: Full-featured database management interface
+- **Adminer 5.3**: Lightweight database administration tool
+- **Mailpit**: Modern email testing and debugging
+- **Elasticsearch 7.17**: Search and analytics engine
+- **Kibana 7.17**: Data visualization and monitoring
 
 ## 🔍 Troubleshooting
 
@@ -408,7 +419,7 @@ MAIL_DRIVER=smtp
    
    # From any directory
    # Laravel storage permissions
-   docker exec -it laravel_project chmod -R 755 storage/
+   docker exec -it laravel_{project-name} chmod -R 755 storage/
    ```
 
 4. **Database connection errors:**
@@ -445,13 +456,13 @@ MAIL_DRIVER=smtp
    ```bash
    # From any directory
    # If you get "Access denied for user 'projectname'" error
-   docker exec db_projectname mysql -u root -proot -e "CREATE USER 'projectname'@'%' IDENTIFIED BY 'projectname';"
-   docker exec db_projectname mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS projectname;"
-   docker exec db_projectname mysql -u root -proot -e "GRANT ALL PRIVILEGES ON projectname.* TO 'projectname'@'%';"
-   docker exec db_projectname mysql -u root -proot -e "FLUSH PRIVILEGES;"
+   docker exec db_{project-name} mysql -u root -proot -e "CREATE USER 'projectname'@'%' IDENTIFIED BY 'projectname';"
+   docker exec db_{project-name} mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS projectname;"
+   docker exec db_{project-name} mysql -u root -proot -e "GRANT ALL PRIVILEGES ON projectname.* TO 'projectname'@'%';"
+   docker exec db_{project-name} mysql -u root -proot -e "FLUSH PRIVILEGES;"
    
    # Then run migrations
-   docker exec laravel_projectname php artisan migrate --no-interaction
+   docker exec laravel_{project-name} php artisan migrate --no-interaction
    ```
 
 ### Debug Commands
@@ -468,10 +479,130 @@ docker logs container_name
 docker exec -it container_name env
 
 # Test database connection
-docker exec -it db_project mysql -u root -p
+docker exec -it db_{project-name} mysql -u root -p
 
 # Check file permissions
 docker exec -it container_name ls -la /var/www/html
+```
+
+## 🔍 Database Administration Tools
+
+### phpMyAdmin vs Adminer
+
+Both tools are available for database management:
+
+**phpMyAdmin** (`http://phpmyadmin.test`):
+- Full-featured database administration
+- WordPress-friendly interface
+- Comprehensive import/export tools
+- Plugin ecosystem
+
+**Adminer** (`http://adminer.test`):
+- Lightweight and fast
+- Clean, modern interface
+- Supports multiple database types
+- Better performance for large datasets
+
+### Using Adminer
+
+```bash
+# Access Adminer at http://adminer.test
+# Login credentials:
+# Server: db
+# Username: root
+# Password: root
+# Database: [your-project-name]
+```
+
+## 🔍 Search & Analytics with Elasticsearch
+
+### Elasticsearch Integration
+
+#### Initial Elasticsearch Setup
+```bash
+# Check Elasticsearch cluster health (with authentication)
+curl -u elastic:changeme http://localhost:9200/_cluster/health?pretty
+
+# Check cluster status (quick view)
+curl -u elastic:changeme http://localhost:9200/_cat/health
+
+# View all indices
+curl -u elastic:changeme http://localhost:9200/_cat/indices
+```
+
+**Security Enabled**: Elasticsearch 7.17 with authentication enabled for Fleet and Agent integrations.
+**Default Credentials**: Username: `elastic`, Password: `changeme`
+
+#### Laravel Projects
+```bash
+# Install Laravel Scout for Elasticsearch
+docker exec -it laravel_{project-name} composer require laravel/scout
+docker exec -it laravel_{project-name} composer require matchish/laravel-scout-elasticsearch
+
+# Configure in your Laravel .env
+SCOUT_DRIVER=elasticsearch
+ELASTICSEARCH_HOST=elasticsearch:9200
+ELASTICSEARCH_USERNAME=elastic
+ELASTICSEARCH_PASSWORD=changeme
+
+# Create and sync searchable models
+docker exec -it laravel_{project-name} php artisan scout:import "App\Models\Post"
+```
+
+#### WordPress Projects
+```bash
+# Install ElasticPress plugin
+docker exec -it php_{project-name} wp --allow-root plugin install elasticpress --activate
+
+# Configure Elasticsearch endpoint in WordPress admin:
+# Settings > ElasticPress > Settings
+# Host: http://elasticsearch:9200
+# Username: elastic
+# Password: changeme
+
+# Index content via WP-CLI
+docker exec -it php_{project-name} wp --allow-root elasticpress index --setup
+```
+
+### Kibana Dashboards
+
+Access Kibana at `http://kibana-{project-name}.test` to:
+- Monitor search performance
+- Create data visualizations
+- Analyze user search patterns
+- Track application metrics
+
+#### Kibana Setup & Access
+```bash
+# Access Kibana with authentication
+# URL: http://kibana-{project-name}.test
+# Username: elastic
+# Password: changeme
+
+# View Kibana logs for debugging
+docker logs kibana_{project-name}
+
+# Check Elasticsearch connection from Kibana container
+docker exec -it kibana_{project-name} curl -u elastic:changeme http://elasticsearch:9200/_cluster/health
+```
+
+#### Security Features Enabled
+- **Authentication Required**: Login with username `elastic` and password `changeme`
+- **Fleet Management**: Now available for Elastic Agent integrations
+- **API Keys**: Enabled for agent authentication (`xpack.security.authc.api_key.enabled=true`)
+- **Full Security**: All Elasticsearch security features are active
+
+### Elasticsearch Management
+
+```bash
+# Check Elasticsearch status
+curl http://localhost:9200/_cluster/health
+
+# View all indices
+curl http://localhost:9200/_cat/indices
+
+# Search data directly
+curl -X GET "localhost:9200/your_index/_search?pretty"
 ```
 
 ## 📊 Performance Optimization
@@ -481,10 +612,10 @@ docker exec -it container_name ls -la /var/www/html
 ```bash
 # From any directory
 # Optimize Laravel
-docker exec -it laravel_project php artisan optimize
-docker exec -it laravel_project php artisan config:cache
-docker exec -it laravel_project php artisan route:cache
-docker exec -it laravel_project php artisan view:cache
+docker exec -it laravel_{project-name} php artisan optimize
+docker exec -it laravel_{project-name} php artisan config:cache
+docker exec -it laravel_{project-name} php artisan route:cache
+docker exec -it laravel_{project-name} php artisan view:cache
 ```
 
 ### WordPress Performance
@@ -492,10 +623,55 @@ docker exec -it laravel_project php artisan view:cache
 ```bash
 # From any directory
 # Enable object caching
-docker exec -it php_project wp --allow-root plugin install redis-cache --activate
+docker exec -it php_{project-name} wp --allow-root plugin install redis-cache --activate
+
+# Install Elasticsearch plugin for enhanced search
+docker exec -it php_{project-name} wp --allow-root plugin install elasticpress --activate
 
 # Optimize database
-docker exec -it php_project wp --allow-root db optimize
+docker exec -it php_{project-name} wp --allow-root db optimize
+```
+
+## 📧 Email Testing with Mailpit
+
+### Using Mailpit
+
+Mailpit replaces MailHog and provides modern email testing:
+
+**Access**: `http://mailpit.test`
+
+**Features**:
+- Modern web interface
+- Real-time email capture
+- HTML email rendering
+- Attachment handling
+- Email search and filtering
+
+**Laravel Configuration**:
+```bash
+# Already configured in docker-compose
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+```
+
+**WordPress Configuration**:
+- Install SMTP plugin or configure in wp-config.php
+- SMTP Server: mailpit
+- Port: 1025
+- No authentication required
+
+**Testing Emails**:
+```bash
+# Laravel - send test email
+docker exec -it laravel_{project-name} php artisan tinker
+# In tinker: Mail::raw('Test email', function($msg) { $msg->to('test@example.com')->subject('Test'); });
+
+# WordPress - use WP-CLI
+docker exec -it php_{project-name} wp --allow-root eval "wp_mail('test@example.com', 'Test Subject', 'Test message');"
 ```
 
 ## 🔐 Security Best Practices
@@ -517,8 +693,9 @@ docker exec -it php_project wp --allow-root db optimize
 
 ### Multi-Project Setup
 
+**Directory:** `wp-local/docker/`
+
 ```bash
-# From wp-local/docker/ directory
 # Project 1 (WordPress)
 ./setup.sh myblog
 # Visit: http://myblog.test
@@ -533,10 +710,11 @@ docker exec -it php_project wp --allow-root db optimize
 
 ### Custom Domain Configuration
 
+**Directory:** `any`
+
 Add custom domains to `/etc/hosts`:
 
 ```bash
-# From any directory
 # Edit hosts file
 sudo nano /etc/hosts
 
@@ -587,13 +765,13 @@ www/project/database/migrations/   # Database migrations
 ```bash
 # From any directory
 # Update WordPress core
-docker exec -it php_project wp --allow-root core update
+docker exec -it php_{project-name} wp --allow-root core update
 
 # Update plugins
-docker exec -it php_project wp --allow-root plugin update --all
+docker exec -it php_{project-name} wp --allow-root plugin update --all
 
 # Update themes
-docker exec -it php_project wp --allow-root theme update --all
+docker exec -it php_{project-name} wp --allow-root theme update --all
 ```
 
 ### Updating Laravel
@@ -601,13 +779,13 @@ docker exec -it php_project wp --allow-root theme update --all
 ```bash
 # From any directory
 # Update dependencies
-docker exec -it laravel_project composer update
+docker exec -it laravel_{project-name} composer update
 
 # Run migrations
-docker exec -it laravel_project php artisan migrate
+docker exec -it laravel_{project-name} php artisan migrate
 
 # Clear caches
-docker exec -it laravel_project php artisan cache:clear
+docker exec -it laravel_{project-name} php artisan cache:clear
 ```
 
 ### Updating Docker Images
@@ -644,7 +822,7 @@ feat(docker): add Redis service for caching
 fix: resolve MySQL connection timeout
 
 # Breaking changes (major version bump)
-feat(docker)!: upgrade to PHP 8.3
+feat(docker)!: upgrade to PHP 8.4
 ```
 
 For more details, see [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -299,7 +299,7 @@ echo "   • Check status: wpstatus-${APP_ID}"
 #  STEP 9  •  /etc/hosts
 # ──────────────────────────────────────────────────────────────────────────────
 echo "📌  Updating /etc/hosts"
-for d in "$PROJECT_DOMAIN" phpmyadmin.test mailpit.test; do
+for d in "$PROJECT_DOMAIN" phpmyadmin.test adminer.test mailpit.test "kibana-$APP_ID.test"; do
   sudo grep -q "$d" /etc/hosts || echo "127.0.0.1 $d" | sudo tee -a /etc/hosts
 done
 
@@ -400,6 +400,9 @@ echo "   • WordPress Site:     http://${PROJECT_DOMAIN}"
 echo "   • Traefik Dashboard:   http://localhost:8080"
 echo "   • phpMyAdmin:         http://phpmyadmin.test"
 echo "   • Mailpit:            http://mailpit.test"
+echo "   • Adminer:            http://adminer.test"
+echo "   • Elasticsearch:      http://localhost:9201"
+echo "   • Kibana:             http://kibana-$APP_ID.test"
 echo ""
 echo "📝  Notes:"
 echo "   • WordPress admin:    http://${PROJECT_DOMAIN}/wp-admin"

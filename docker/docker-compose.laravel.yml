@@ -97,6 +97,62 @@ services:
     networks:
       - web
 
+  adminer:
+    platform: linux/amd64
+    image: adminer:5.3.0
+    container_name: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.test`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    depends_on:
+      - db
+    networks:
+      - web
+
+  elasticsearch:
+    platform: linux/amd64
+    image: elasticsearch:7.17.25
+    container_name: elasticsearch_${APP_ID}
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.authc.api_key.enabled=true
+      - ELASTIC_PASSWORD=changeme
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ../www/${APP_ID}/elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - web
+
+  kibana:
+    platform: linux/amd64
+    image: kibana:7.17.25
+    container_name: kibana_${APP_ID}
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changeme
+      XPACK_SECURITY_ENABLED: true
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kibana-${APP_ID}.rule=Host(`kibana-${APP_ID}.test`)"
+      - "traefik.http.services.kibana-${APP_ID}.loadbalancer.server.port=5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - web
+
   traefik:
     image: traefik:v3.2
     container_name: traefik
