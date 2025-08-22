@@ -1,6 +1,6 @@
 {
   "name": "wp-local",
-  "version": "1.2.0",
+  "version": "1.0.0",
   "description": "Docker-based WordPress and Laravel local development environment",
   "private": true,
   "type": "module",
