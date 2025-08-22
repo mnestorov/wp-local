@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+
+# Check if there are any staged changes in www/ directory
+if git diff --cached --name-only | grep -q "^www/"; then
+  echo "⚠️  Warning: Changes detected in www/ directory"
+  echo "The www/ directory should typically be excluded from version control."
+  echo "If this is intentional, you can proceed with the commit."
+  read -p "Do you want to continue? (y/n) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi

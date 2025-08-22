@@ -1,0 +1,36 @@
+# Composer cache
+/composer/*
+!/composer/.gitkeep
+
+# Docker
+/db_data/
+
+# Node/npm
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.npm
+
+# IDEs
+.idea
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+.claude/settings.local.json
+.last_pull
+.last_check
+CLAUDE.md
+
+# Env files
+.env
+docker/.env
+docker/.env.laravel
+docker/.env.wordpress
+
+# WordPress projects - exclude entire www directory
+/www/
