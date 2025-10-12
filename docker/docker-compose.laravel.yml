@@ -68,7 +68,7 @@ services:
 
   phpmyadmin:
     platform: linux/amd64
-    image: phpmyadmin/phpmyadmin:5.2
+    image: phpmyadmin/phpmyadmin:latest
     container_name: phpmyadmin
     environment:
       PMA_HOST: db
@@ -99,7 +99,7 @@ services:
 
   adminer:
     platform: linux/amd64
-    image: adminer:5.3.0
+    image: adminer:latest
     container_name: adminer
     environment:
       ADMINER_DEFAULT_SERVER: db
@@ -154,7 +154,7 @@ services:
       - web
 
   traefik:
-    image: traefik:v3.2
+    image: traefik:v3.5
     container_name: traefik
     command:
       - "--api.insecure=true"

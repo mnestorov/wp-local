@@ -4,6 +4,14 @@ set -e
 # ──────────────────────────────────────────────────────────────────────────────
 #  STEP 1  •  Project name
 # ──────────────────────────────────────────────────────────────────────────────
+# Determine the base directory (parent of scripts if we're in scripts)
+if [[ "$(basename "$(pwd)")" == "scripts" ]]; then
+    BASE_DIR=".."
+    cd "$BASE_DIR"
+else
+    BASE_DIR="."
+fi
+
 mkdir -p www
 read -rp "Enter project name (APP_ID): " APP_ID
 [ -z "$APP_ID" ] && { echo "❌  Project name cannot be empty."; exit 1; }
@@ -20,10 +28,10 @@ DB_PASSWORD=${APP_ID}_pass
 #  STEP 2  •  .env
 # ──────────────────────────────────────────────────────────────────────────────
 # Create .env file only if it doesn't exist (to avoid overwriting existing projects)
-if [ ! -f ../docker/.env ]; then
+if [ ! -f "$BASE_DIR/docker/.env" ]; then
     echo "🧪  Creating .env file for shared settings"
-    mkdir -p ../docker
-    cat > ../docker/.env <<ENV
+    mkdir -p "$BASE_DIR/docker"
+    cat > "$BASE_DIR/docker/.env" <<ENV
 PHP_VERSION=8.3-fpm
 MARIADB_VERSION=10.11
 PHPMYADMIN_VERSION=5.2
@@ -132,7 +140,7 @@ done
 #  STEP 6  •  Docker up
 # ──────────────────────────────────────────────────────────────────────────────
 echo "🧹  Cleaning up any existing containers/volumes for this project"
-(cd ../docker && docker compose -f docker-compose.laravel.yml --env-file .env down -v 2>/dev/null || true)
+(cd "$BASE_DIR/docker" && docker compose -f docker-compose.laravel.yml --env-file .env down -v 2>/dev/null || true)
 
 echo "🚀  docker compose up …"
 
@@ -144,7 +152,7 @@ export APP_ID="$APP_ID"
 export PROJECT_DOMAIN="$PROJECT_DOMAIN"
 
 # Run docker compose with exported environment variables
-(cd ../docker && docker compose -f docker-compose.laravel.yml up -d)
+(cd "$BASE_DIR/docker" && docker compose -f docker-compose.laravel.yml up -d)
 
 # ──────────────────────────────────────────────────────────────────────────────
 #  STEP 7  •  Laravel Setup
@@ -213,17 +221,20 @@ else
 fi
 
 if [ -n "$SHELL_CONFIG" ]; then
+    # Get the absolute path to the wp-local directory
+    WP_LOCAL_DIR="$(cd "$BASE_DIR" && pwd)"
+    
     # Check if aliases already exist
     if ! grep -q "alias laravelup.*${APP_ID}" "$SHELL_CONFIG"; then
         # Add aliases with project-specific comments
         cat >> "$SHELL_CONFIG" <<ALIASES
 
 # Laravel Docker aliases for ${APP_ID} project
-alias laravelup-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml up -d'
-alias laraveldown-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml down'
-alias laravellogs-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml logs -f'
-alias laravelrestart-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml restart'
-alias laravelclean-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml down -v'
+alias laravelup-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml up -d'
+alias laraveldown-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml down'
+alias laravellogs-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml logs -f'
+alias laravelrestart-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml restart'
+alias laravelclean-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.laravel.yml down -v'
 
 # Laravel Artisan aliases for ${APP_ID} project
 alias artisan-${APP_ID}='docker exec -it laravel_${APP_ID} php artisan'

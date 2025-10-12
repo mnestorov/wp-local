@@ -2,9 +2,22 @@
 
 [![Last Update](https://img.shields.io/github/last-commit/mnestorov/wp-local/main.svg?label=last%20update)](https://github.com/mnestorov/wp-local/commits/main)
 [![Version](https://img.shields.io/github/v/release/mnestorov/wp-local?label=version)](https://github.com/mnestorov/wp-local/releases)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)]()
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blue)](https://www.docker.com/)
 
 A complete Docker-based local development environment supporting both **WordPress** and **Laravel** projects with automatic project setup, intelligent project detection, and streamlined development workflows.
+
+## 📰 Latest Updates
+
+### Version Updates (October 2025)
+
+- **Traefik**: Upgraded to v3.5 (latest stable release)
+- **phpMyAdmin**: Updated to latest version for improved security
+- **Adminer**: Updated to latest version for better performance
+- **PHP**: Already using 8.4 (latest stable) in all Docker images
+- **Composer**: Using version 2.8 for better dependency management
+- **MariaDB**: Continues with 11.6 LTS for stability
+- **Redis**: Using 7.4 Alpine for minimal footprint
+- **Elasticsearch/Kibana**: 7.17.25 with full security features enabled
 
 ## 🛠️ Tools & Technologies
 
@@ -12,23 +25,23 @@ A complete Docker-based local development environment supporting both **WordPres
 
 - **Docker** - Containerization platform for consistent development environments
 - **Docker Compose** - Multi-container Docker applications
-- **Traefik** - Modern reverse proxy and load balancer for automatic routing
-- **MariaDB** - Latest LTS database server (MySQL-compatible)
+- **Traefik v3.5** - Modern reverse proxy and load balancer for automatic routing (latest stable)
+- **MariaDB 11.6** - Latest LTS database server (MySQL-compatible)
 - **PHP 8.4** - Latest PHP version with improved performance and features
 - **Nginx** - Web server (for Laravel projects)
 - **Apache** - Web server (for WordPress projects)
 
 ### Development Tools
 
-- **Composer** - PHP dependency management
+- **Composer 2.8** - PHP dependency management
 - **GitHub Authentication** - For private repository access
 - **Mailpit** - Modern email testing and development tool
-- **phpMyAdmin** - Database administration interface
-- **Adminer** - Lightweight database administration tool
-- **Elasticsearch** - Search and analytics engine
-- **Kibana** - Elasticsearch data visualization
+- **phpMyAdmin** - Database administration interface (latest version)
+- **Adminer** - Lightweight database administration tool (latest version)
+- **Elasticsearch 7.17.25** - Search and analytics engine with security enabled
+- **Kibana 7.17.25** - Elasticsearch data visualization with authentication
 - **WP-CLI** - Command-line interface for WordPress
-- **Redis** - In-memory data structure store (for Laravel projects)
+- **Redis 7.4** - In-memory data structure store (for Laravel projects)
 
 ### Supported Frameworks
 
@@ -54,6 +67,7 @@ cd wp-local/docker
 ```
 
 **Examples:**
+
 ```bash
 # For WordPress project
 ./setup.sh smartyapp
@@ -160,11 +174,13 @@ wp-local/
 The setup script automatically detects your project type:
 
 ### WordPress Detection
+
 - Looks for `wp-config.php` or `wp/wp-config.php`
 - Uses `docker-compose.wordpress.yml`
 - Mounts `../www/{project}/wp:/var/www/html`
 
-### Laravel Detection  
+### Laravel Detection
+
 - Looks for `artisan` file and `composer.json`
 - Uses `docker-compose.laravel.yml`
 - Mounts `../www/{project}:/var/www/html`
@@ -362,32 +378,36 @@ MAIL_DRIVER=smtp
 ## 🛠️ Container Architecture
 
 ### WordPress Container (docker-php)
+
 - **Base**: `php:8.4-apache`
 - **Services**: Apache, PHP, WP-CLI
 - **Volumes**: WordPress files, database, uploads, elasticsearch data
 - **Networking**: Traefik routing
 
 ### Laravel Container (docker-laravel)
+
 - **Base**: `php:8.4-fpm`
 - **Services**: Nginx, PHP-FPM, Supervisor
 - **Volumes**: Laravel application, database, storage, elasticsearch data
 - **Networking**: Traefik routing, Redis connection
 
 ### Shared Services
+
 - **MariaDB 11.6**: Database server
 - **Redis 7.4**: Caching and sessions (Laravel)
-- **Traefik v3.2**: Reverse proxy and SSL termination
-- **phpMyAdmin 5.2**: Full-featured database management interface
-- **Adminer 5.3**: Lightweight database administration tool
-- **Mailpit**: Modern email testing and debugging
-- **Elasticsearch 7.17**: Search and analytics engine
-- **Kibana 7.17**: Data visualization and monitoring
+- **Traefik v3.5**: Reverse proxy and SSL termination (latest stable)
+- **phpMyAdmin latest**: Full-featured database management interface
+- **Adminer latest**: Lightweight database administration tool
+- **Mailpit latest**: Modern email testing and debugging
+- **Elasticsearch 7.17.25**: Search and analytics engine with security enabled
+- **Kibana 7.17.25**: Data visualization and monitoring with authentication
 
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
 1. **Containers from previous project still running:**
+
    ```bash
    # From any directory
    # Check what containers are running
@@ -405,6 +425,7 @@ MAIL_DRIVER=smtp
    ```
 
 2. **Port conflicts:**
+
    ```bash
    # From any directory
    # Check what's using port 80
@@ -416,6 +437,7 @@ MAIL_DRIVER=smtp
    ```
 
 3. **Permission issues:**
+
    ```bash
    # From wp-local/ directory
    # Fix file permissions
@@ -427,6 +449,7 @@ MAIL_DRIVER=smtp
    ```
 
 4. **Database connection errors:**
+
    ```bash
    # From wp-local/docker/ directory
    # Reset environment
@@ -435,6 +458,7 @@ MAIL_DRIVER=smtp
    ```
 
 5. **Container build failures:**
+
    ```bash
    # From any directory
    # Clean Docker cache
@@ -446,6 +470,7 @@ MAIL_DRIVER=smtp
    ```
 
 6. **WordPress containers still active when trying to start Laravel:**
+
    ```bash
    # From wp-local/docker/ directory
    # Quick fix
@@ -457,6 +482,7 @@ MAIL_DRIVER=smtp
    ```
 
 7. **Database user doesn't exist error (Laravel):**
+
    ```bash
    # From any directory
    # If you get "Access denied for user 'projectname'" error
@@ -496,12 +522,14 @@ docker exec -it container_name ls -la /var/www/html
 Both tools are available for database management:
 
 **phpMyAdmin** (`http://phpmyadmin.test`):
+
 - Full-featured database administration
 - WordPress-friendly interface
 - Comprehensive import/export tools
 - Plugin ecosystem
 
 **Adminer** (`http://adminer.test`):
+
 - Lightweight and fast
 - Clean, modern interface
 - Supports multiple database types
@@ -523,6 +551,7 @@ Both tools are available for database management:
 ### Elasticsearch Integration
 
 #### Initial Elasticsearch Setup
+
 ```bash
 # Check Elasticsearch cluster health (with authentication)
 curl -u elastic:changeme http://localhost:9200/_cluster/health?pretty
@@ -534,10 +563,11 @@ curl -u elastic:changeme http://localhost:9200/_cat/health
 curl -u elastic:changeme http://localhost:9200/_cat/indices
 ```
 
-**Security Enabled**: Elasticsearch 7.17 with authentication enabled for Fleet and Agent integrations.
+**Security Enabled**: Elasticsearch 7.17.25 with authentication enabled for Fleet and Agent integrations.
 **Default Credentials**: Username: `elastic`, Password: `changeme`
 
-#### Laravel Projects
+#### Laravel
+
 ```bash
 # Install Laravel Scout for Elasticsearch
 docker exec -it laravel_{project-name} composer require laravel/scout
@@ -553,7 +583,8 @@ ELASTICSEARCH_PASSWORD=changeme
 docker exec -it laravel_{project-name} php artisan scout:import "App\Models\Post"
 ```
 
-#### WordPress Projects
+#### WordPress
+
 ```bash
 # Install ElasticPress plugin
 docker exec -it php_{project-name} wp --allow-root plugin install elasticpress --activate
@@ -571,12 +602,14 @@ docker exec -it php_{project-name} wp --allow-root elasticpress index --setup
 ### Kibana Dashboards
 
 Access Kibana at `http://kibana-{project-name}.test` to:
+
 - Monitor search performance
 - Create data visualizations
 - Analyze user search patterns
 - Track application metrics
 
 #### Kibana Setup & Access
+
 ```bash
 # Access Kibana with authentication
 # URL: http://kibana-{project-name}.test
@@ -591,6 +624,7 @@ docker exec -it kibana_{project-name} curl -u elastic:changeme http://elasticsea
 ```
 
 #### Security Features Enabled
+
 - **Authentication Required**: Login with username `elastic` and password `changeme`
 - **Fleet Management**: Now available for Elastic Agent integrations
 - **API Keys**: Enabled for agent authentication (`xpack.security.authc.api_key.enabled=true`)
@@ -645,6 +679,7 @@ Mailpit replaces MailHog and provides modern email testing:
 **Access**: `http://mailpit.test`
 
 **Features**:
+
 - Modern web interface
 - Real-time email capture
 - HTML email rendering
@@ -652,6 +687,7 @@ Mailpit replaces MailHog and provides modern email testing:
 - Email search and filtering
 
 **Laravel Configuration**:
+
 ```bash
 # Already configured in docker-compose
 MAIL_MAILER=smtp
@@ -663,12 +699,14 @@ MAIL_ENCRYPTION=null
 ```
 
 **WordPress Configuration**:
+
 - Install SMTP plugin or configure in wp-config.php
 - SMTP Server: mailpit
 - Port: 1025
 - No authentication required
 
 **Testing Emails**:
+
 ```bash
 # Laravel - send test email
 docker exec -it laravel_{project-name} php artisan tinker
@@ -810,14 +848,17 @@ docker-compose up --build -d
 This project follows [Semantic Versioning](https://semver.org/) and uses automated releases via [semantic-release](https://github.com/semantic-release/semantic-release).
 
 ### Version Format
+
 - **Major** (X.0.0): Breaking changes
 - **Minor** (0.X.0): New features, backwards compatible
 - **Patch** (0.0.X): Bug fixes, backwards compatible
 
 ### Automated Releases
+
 Releases are automatically created when changes are pushed to the `main` branch. The version number is determined by analyzing commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) specification.
 
 ### Commit Message Format
+
 ```bash
 # Features (minor version bump)
 feat(docker): add Redis service for caching
@@ -846,6 +887,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-**Happy Development! 🚀**
+🚀 **Happy Development!**
 
 *This environment supports both WordPress and Laravel development with automatic project detection, intelligent environment configuration, and streamlined workflows for modern PHP development.*

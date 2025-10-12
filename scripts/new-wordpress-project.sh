@@ -4,6 +4,14 @@ set -e
 # ──────────────────────────────────────────────────────────────────────────────
 #  STEP 1  •  Project name
 # ──────────────────────────────────────────────────────────────────────────────
+# Determine the base directory (parent of scripts if we're in scripts)
+if [[ "$(basename "$(pwd)")" == "scripts" ]]; then
+    BASE_DIR=".."
+    cd "$BASE_DIR"
+else
+    BASE_DIR="."
+fi
+
 mkdir -p www
 read -rp "Enter project name (APP_ID): " APP_ID
 [ -z "$APP_ID" ] && { echo "❌  Project name cannot be empty."; exit 1; }
@@ -21,9 +29,9 @@ DB_PASSWORD=${APP_ID}_pass
 #  STEP 2  •  .env
 # ──────────────────────────────────────────────────────────────────────────────
 # Create .env file only if it doesn't exist (to avoid overwriting existing projects)
-if [ ! -f docker/.env ]; then
+if [ ! -f "$BASE_DIR/docker/.env" ]; then
     echo "🧪  Creating .env file for shared settings"
-    cat > docker/.env <<ENV
+    cat > "$BASE_DIR/docker/.env" <<ENV
 PHP_VERSION=8.3-apache
 MARIADB_VERSION=10.11
 PHPMYADMIN_VERSION=5.2
@@ -46,18 +54,18 @@ echo "   Get one from: https://github.com/settings/tokens"
 echo "   Note: Your repository should have a composer.json file for proper installation."
 
 # Check if GitHub token is already configured
-if grep -q "GITHUB_AUTH_TOKEN=ghp_" docker/.env; then
+if grep -q "GITHUB_AUTH_TOKEN=ghp_" "$BASE_DIR/docker/.env"; then
     # Extract the existing token from .env file
-    GITHUB_TOKEN=$(grep "GITHUB_AUTH_TOKEN=" docker/.env | cut -d'=' -f2)
+    GITHUB_TOKEN=$(grep "GITHUB_AUTH_TOKEN=" "$BASE_DIR/docker/.env" | cut -d'=' -f2)
     echo "✅  Using existing GitHub token from .env file"
 else
     read -rp "Enter your GitHub token (or press Enter to skip): " GITHUB_TOKEN
 
     if [ -n "$GITHUB_TOKEN" ]; then
         # Update .env file with the actual token
-        sed -i.bak "s/GITHUB_AUTH_TOKEN=your_github_token_here/GITHUB_AUTH_TOKEN=$GITHUB_TOKEN/" docker/.env
+        sed -i.bak "s/GITHUB_AUTH_TOKEN=your_github_token_here/GITHUB_AUTH_TOKEN=$GITHUB_TOKEN/" "$BASE_DIR/docker/.env"
         # Clean up the backup file
-        rm -f docker/.env.bak
+        rm -f "$BASE_DIR/docker/.env.bak"
         echo "✅  GitHub token added to .env file"
     else
         echo "⚠️  No GitHub token provided. Private repositories may not work."
@@ -307,7 +315,15 @@ done
 #  STEP 10  •  Docker up
 # ──────────────────────────────────────────────────────────────────────────────
 echo "🧹  Cleaning up any existing containers/volumes for this project"
-(cd docker && docker compose --env-file .env down -v 2>/dev/null || true)
+
+# Determine the base directory (parent of scripts if we're in scripts)
+if [[ "$(basename "$(pwd)")" == "scripts" ]]; then
+    BASE_DIR=".."
+else
+    BASE_DIR="."
+fi
+
+(cd "$BASE_DIR/docker" && docker compose -f docker-compose.wordpress.yml --env-file .env down -v 2>/dev/null || true)
 
 echo "🚀  docker compose up …"
 
@@ -319,7 +335,7 @@ export APP_ID="$APP_ID"
 export PROJECT_DOMAIN="$PROJECT_DOMAIN"
 
 # Run docker compose with exported environment variables
-(cd docker && docker compose up -d)
+(cd "$BASE_DIR/docker" && docker compose -f docker-compose.wordpress.yml up -d)
 
 echo "✅  Done.  Visit → http://${PROJECT_DOMAIN}"
 
@@ -362,17 +378,20 @@ else
 fi
 
 if [ -n "$SHELL_CONFIG" ]; then
+    # Get the absolute path to the wp-local directory
+    WP_LOCAL_DIR="$(cd "$BASE_DIR" && pwd)"
+    
     # Check if aliases already exist
     if ! grep -q "alias wpup.*${APP_ID}" "$SHELL_CONFIG"; then
         # Add aliases with project-specific comments
         cat >> "$SHELL_CONFIG" <<ALIASES
 
 # WordPress Docker aliases for ${APP_ID} project
-alias wpup-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose up -d'
-alias wpdown-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose down'
-alias wplogs-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose logs -f'
-alias wprestart-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose restart'
-alias wpclean-${APP_ID}='cd ${PWD}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose down -v'
+alias wpup-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.wordpress.yml up -d'
+alias wpdown-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.wordpress.yml down'
+alias wplogs-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.wordpress.yml logs -f'
+alias wprestart-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.wordpress.yml restart'
+alias wpclean-${APP_ID}='cd ${WP_LOCAL_DIR}/docker && export DB_NAME="$(echo ${APP_ID} | cut -c1-2)_${APP_ID}" && export DB_USER="${APP_ID}_user" && export DB_PASSWORD="${APP_ID}_pass" && export APP_ID="${APP_ID}" && export PROJECT_DOMAIN="${APP_ID}.test" && docker compose -f docker-compose.wordpress.yml down -v'
 alias wpprune-${APP_ID}='docker system prune -a --volumes -f'
 
 # WP-CLI aliases for ${APP_ID} project
