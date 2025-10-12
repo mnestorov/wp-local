@@ -8,7 +8,7 @@ This project uses [Conventional Commits](https://www.conventionalcommits.org/) a
 
 Each commit message consists of a **header**, a **body** (optional), and a **footer** (optional).
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -32,6 +32,7 @@ Each commit message consists of a **header**, a **body** (optional), and a **foo
 ### Scope (Optional)
 
 The scope could be:
+
 - `docker`: Docker configuration changes
 - `wordpress`: WordPress-specific changes
 - `laravel`: Laravel-specific changes
@@ -73,6 +74,7 @@ This will guide you through creating a properly formatted commit message.
 ## Development Workflow
 
 1. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -83,6 +85,7 @@ This will guide you through creating a properly formatted commit message.
    - Test your changes
 
 3. **Commit using conventional commits**
+
    ```bash
    npm run commit
    # or
@@ -90,6 +93,7 @@ This will guide you through creating a properly formatted commit message.
    ```
 
 4. **Push and create a Pull Request**
+
    ```bash
    git push origin feature/your-feature-name
    ```

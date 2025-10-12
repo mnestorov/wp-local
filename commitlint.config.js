@@ -20,7 +20,7 @@ export default {
     ],
     'subject-case': [2, 'always', 'lower-case'],
     'subject-full-stop': [2, 'never', '.'],
-    'header-max-length': [2, 'always', 100],
+    'header-max-length': [2, 'always', 200],
     'body-leading-blank': [2, 'always'],
     'body-max-line-length': [0, 'always', 100], // Disabled for release notes
     'footer-leading-blank': [2, 'always']
