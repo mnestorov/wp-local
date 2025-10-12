@@ -5,6 +5,13 @@ All notable changes to the WP-Local Docker environment will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [1.1.0](https://github.com/mnestorov/wp-local/compare/v1.0.0...v1.1.0) (2025-10-12)
+
+
+### Features
+
+* update project configuration and scripts + upgrade services to latest versions ([7cad63e](https://github.com/mnestorov/wp-local/commit/7cad63e6d3d94a5627f1ce6d740d6256fda88c4f))
+
 # 1.0.0 (2025-08-22)
 
 
