@@ -54,12 +54,13 @@ A complete Docker-based local development environment supporting both **WordPres
 - **Docker Engine** - For Linux users
 - **Bash Shell** - For script execution
 - **Git** - Version control (optional but recommended)
+- **Ruby 3.4+** - For DIP (Docker Interaction Process) support (optional but recommended)
 
 ## 🚀 Quick Start
 
 ### Automated Setup (Recommended)
 
-The setup script automatically detects your project type and configures the environment:
+The setup script automatically detects your project type and configures the environment. It also generates a `dip.yml` file for simplified Docker commands.
 
 ```bash
 cd wp-local/docker
@@ -72,8 +73,49 @@ cd wp-local/docker
 # For WordPress project
 ./setup.sh smartyapp
 
-# For Laravel project  
+# For Laravel project
 ./setup.sh smartylaravel
+```
+
+**What the setup script does:**
+
+- Detects project type (WordPress or Laravel)
+- Configures environment variables
+- **Auto-generates dip.yml** with project-specific settings
+- Starts Docker containers
+- Sets up database and dependencies
+
+### Using DIP - Simplified Docker Commands (Recommended)
+
+DIP (Docker Interaction Process) provides a simplified interface for Docker operations. Navigate to your project directory first:
+
+```bash
+# Navigate to your project
+cd www/<project-name>
+
+# Common commands
+dip up          # Start all services
+dip down        # Stop all services
+dip logs        # View logs
+dip restart     # Restart services
+dip clean       # Stop and remove volumes
+```
+
+**WordPress-specific:**
+
+```bash
+dip wp plugin list  # Run WP-CLI commands
+dip shell           # Access PHP container
+dip db              # Access database CLI
+```
+
+**Laravel-specific:**
+
+```bash
+dip artisan migrate # Run Artisan commands
+dip composer install # Run Composer
+dip npm install     # Run NPM commands
+dip test            # Run tests
 ```
 
 ### Manual Setup
@@ -88,6 +130,81 @@ docker-compose -f docker-compose.wordpress.yml up -d
 
 # For Laravel
 docker-compose -f docker-compose.laravel.yml up -d
+```
+
+## 🔧 DIP Installation (Optional but Recommended)
+
+DIP (Docker Interaction Process) simplifies Docker commands and provides a cleaner workflow.
+
+### Installing DIP
+
+**macOS:**
+
+```bash
+# Install Ruby 3.4+ via Homebrew (if not already installed)
+brew install ruby
+
+# Add Ruby to your PATH in ~/.zshrc or ~/.bash_profile
+export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+export PATH="/opt/homebrew/lib/ruby/gems/3.4.0/bin:$PATH"
+
+# Reload shell
+source ~/.zshrc  # or source ~/.bash_profile
+
+# Install DIP gem
+gem install dip
+
+# Verify installation
+dip version
+```
+
+**Linux:**
+
+```bash
+# Install Ruby 3.4+ via package manager
+# Ubuntu/Debian:
+sudo apt-get install ruby-full
+
+# Fedora/RHEL:
+sudo dnf install ruby
+
+# Install DIP gem
+gem install dip
+
+# Verify installation
+dip version
+```
+
+### DIP Configuration
+
+**Automatic Generation**: When you create a new project using the setup scripts, a `dip.yml` file is automatically generated in your project directory with the correct configuration for your project type (WordPress or Laravel).
+
+The auto-generated `dip.yml` file includes:
+
+- Project-specific environment variables (database credentials, domain, etc.)
+- Pre-configured commands for common tasks (up, down, logs, etc.)
+- Framework-specific commands (WP-CLI for WordPress, Artisan for Laravel)
+- Container access commands (shell, database CLI, etc.)
+
+**Example projects with dip.yml:**
+
+- [www/smartyapp/dip.yml](www/smartyapp/dip.yml) - WordPress configuration
+- [www/smartylaravel/dip.yml](www/smartylaravel/dip.yml) - Laravel configuration
+
+**Manual creation**: If you need to create a `dip.yml` file manually, templates are available at:
+
+- [docker/templates/dip.wordpress.yml](docker/templates/dip.wordpress.yml) - WordPress template
+- [docker/templates/dip.laravel.yml](docker/templates/dip.laravel.yml) - Laravel template
+
+### Using DIP
+
+Navigate to your project directory and use simple commands:
+
+```bash
+cd www/your-project
+dip ls          # List all available commands
+dip up          # Start services
+dip down        # Stop services
 ```
 
 ## 🔧 Environment Configuration System
@@ -232,6 +349,28 @@ The setup script automatically detects your project type:
 
 ## 🔄 Manual Docker Commands
 
+### DIP vs Traditional Commands
+
+**With DIP (from project directory):**
+
+```bash
+cd www/your-project
+dip up              # Start services
+dip down            # Stop services
+dip logs            # View logs
+dip restart         # Restart services
+```
+
+**Traditional Docker Compose (from docker directory):**
+
+```bash
+cd wp-local/docker
+docker-compose -f docker-compose.wordpress.yml up -d
+docker-compose -f docker-compose.wordpress.yml down
+docker-compose -f docker-compose.wordpress.yml logs -f
+docker-compose -f docker-compose.wordpress.yml restart
+```
+
 ### Clearing All Containers (Important!)
 
 Before switching between WordPress and Laravel, always clear all containers to avoid conflicts:
@@ -318,6 +457,21 @@ docker rm $(docker ps -a -q)
 
 ### Laravel-Specific Commands
 
+**With DIP (from project directory):**
+
+```bash
+cd www/smartylaravel
+dip shell           # Access Laravel container
+dip artisan migrate # Run migrations
+dip tinker          # Open Tinker
+dip composer install # Install dependencies
+dip npm install     # Install frontend dependencies
+dip test            # Run tests
+dip queue           # Start queue worker
+```
+
+**Traditional Docker Commands:**
+
 ```bash
 # From any directory
 # Access Laravel container
@@ -330,6 +484,20 @@ docker exec -it laravel_smartylaravel composer install
 ```
 
 ### WordPress-Specific Commands
+
+**With DIP (from project directory):**
+
+```bash
+cd www/smartyapp
+dip shell               # Access PHP container
+dip wp user list        # List WordPress users
+dip wp plugin list      # List plugins
+dip wp core update      # Update WordPress core
+dip composer install    # Install dependencies
+dip db                  # Access database CLI
+```
+
+**Traditional Docker Commands:**
 
 ```bash
 # From any directory
@@ -884,6 +1052,63 @@ We welcome contributions! Please follow our commit message conventions to ensure
 4. Automated tests and releases run on merge to main
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📖 DIP Quick Reference
+
+### Common Commands (All Projects)
+
+| Command | Description |
+|---------|-------------|
+| `dip ls` | List all available commands |
+| `dip up` | Start all services |
+| `dip down` | Stop all services |
+| `dip restart` | Restart all services |
+| `dip logs` | View service logs |
+| `dip clean` | Stop and remove volumes |
+
+### WordPress Commands
+
+| Command | Description |
+|---------|-------------|
+| `dip wp <command>` | Run WP-CLI commands |
+| `dip shell` | Access PHP container shell |
+| `dip db` | Access database CLI |
+| `dip composer <command>` | Run Composer commands |
+| `dip status` | Check WordPress installation status |
+
+**Examples:**
+
+```bash
+dip wp plugin list
+dip wp user create john john@example.com --role=editor
+dip wp db export backup.sql
+```
+
+### Laravel Commands
+
+| Command | Description |
+|---------|-------------|
+| `dip artisan <command>` | Run Artisan commands |
+| `dip shell` | Access Laravel container shell |
+| `dip composer <command>` | Run Composer commands |
+| `dip npm <command>` | Run NPM commands |
+| `dip test` | Run Pest tests |
+| `dip migrate` | Run database migrations |
+| `dip queue` | Start queue worker |
+| `dip tinker` | Open Laravel Tinker |
+| `dip db` | Access database CLI |
+| `dip redis` | Access Redis CLI |
+
+**Examples:**
+
+```bash
+dip artisan make:model Post
+dip composer require laravel/sanctum
+dip npm run dev
+dip test --filter UserTest
+```
 
 ---
 

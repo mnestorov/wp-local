@@ -95,6 +95,37 @@ fi
 
 print_success "Environment configured for $PROJECT_NAME ($PROJECT_TYPE)"
 
+# Create dip.yml file from template
+print_info "Creating dip.yml configuration..."
+if [ "$PROJECT_TYPE" == "laravel" ]; then
+    DIP_TEMPLATE="templates/dip.laravel.yml"
+    DB_NAME="$PROJECT_NAME"
+    DB_USER="$PROJECT_NAME"
+    DB_PASSWORD="$PROJECT_NAME"
+elif [ "$PROJECT_TYPE" == "wordpress" ]; then
+    DIP_TEMPLATE="templates/dip.wordpress.yml"
+    # WordPress database naming convention from existing projects
+    DB_NAME="$(echo "$PROJECT_NAME" | cut -c1-2)_$PROJECT_NAME"
+    DB_USER="${PROJECT_NAME}_user"
+    DB_PASSWORD="${PROJECT_NAME}_pass"
+fi
+
+if [ -f "$DIP_TEMPLATE" ]; then
+    # Copy template and replace placeholders
+    sed -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
+        -e "s/{{PROJECT_DOMAIN}}/$PROJECT_NAME.test/g" \
+        -e "s/{{DB_NAME}}/$DB_NAME/g" \
+        -e "s/{{DB_USER}}/$DB_USER/g" \
+        -e "s/{{DB_PASSWORD}}/$DB_PASSWORD/g" \
+        "$DIP_TEMPLATE" > "$PROJECT_PATH/dip.yml"
+
+    print_success "Created dip.yml in project directory"
+    print_info "You can now use DIP commands from $PROJECT_PATH/"
+    print_info "Example: cd $PROJECT_PATH && dip up"
+else
+    print_warning "DIP template not found at $DIP_TEMPLATE"
+fi
+
 # Stop any running containers
 print_info "Stopping existing containers..."
 docker-compose -f "$COMPOSE_FILE" down --remove-orphans 2>/dev/null || true
