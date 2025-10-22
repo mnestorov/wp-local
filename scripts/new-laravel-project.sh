@@ -255,7 +255,29 @@ ALIASES
 fi
 
 # ──────────────────────────────────────────────────────────────────────────────
-#  STEP 9  •  System Links
+#  STEP 9  •  Create dip.yml configuration
+# ──────────────────────────────────────────────────────────────────────────────
+echo "🔧  Creating DIP configuration..."
+DIP_TEMPLATE="$BASE_DIR/docker/templates/dip.laravel.yml"
+
+if [ -f "$DIP_TEMPLATE" ]; then
+    sed -e "s/{{PROJECT_NAME}}/$APP_ID/g" \
+        -e "s/{{PROJECT_DOMAIN}}/$PROJECT_DOMAIN/g" \
+        -e "s/{{DB_NAME}}/$DB_NAME/g" \
+        -e "s/{{DB_USER}}/$DB_USER/g" \
+        -e "s/{{DB_PASSWORD}}/$DB_PASSWORD/g" \
+        "$DIP_TEMPLATE" > "$PROJECT_DIR/dip.yml"
+
+    echo "✅  Created dip.yml in project directory"
+    echo "   You can now use DIP commands from $PROJECT_DIR/"
+    echo "   Example: cd $PROJECT_DIR && dip up"
+else
+    echo "⚠️  DIP template not found at $DIP_TEMPLATE"
+    echo "   You can manually create dip.yml later"
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  STEP 10  •  System Links
 # ──────────────────────────────────────────────────────────────────────────────
 echo ""
 echo "🌐  Available Systems:"

@@ -1,0 +1,78 @@
+version: '7.1'
+
+# DIP configuration for Laravel project: {{PROJECT_NAME}}
+# Usage from project directory:
+#   dip up          - Start all services
+#   dip down        - Stop all services
+#   dip logs        - View logs
+#   dip artisan     - Run Artisan commands
+
+environment:
+  COMPOSE_PROJECT_NAME: {{PROJECT_NAME}}
+  COMPOSE_FILE: ../../docker/docker-compose.laravel.yml
+  APP_ID: {{PROJECT_NAME}}
+  PROJECT_DOMAIN: {{PROJECT_DOMAIN}}
+  DB_NAME: {{DB_NAME}}
+  DB_USER: {{DB_USER}}
+  DB_PASSWORD: {{DB_PASSWORD}}
+
+interaction:
+  up:
+    description: Start Laravel services
+    command: docker-compose up -d
+
+  down:
+    description: Stop Laravel services
+    command: docker-compose down
+
+  restart:
+    description: Restart Laravel services
+    command: docker-compose restart
+
+  logs:
+    description: View service logs
+    command: docker-compose logs -f
+
+  clean:
+    description: Stop and remove volumes
+    command: docker-compose down -v
+
+  artisan:
+    description: Run Artisan commands
+    command: docker exec -it laravel_{{PROJECT_NAME}} php artisan
+
+  shell:
+    description: Access Laravel container shell
+    command: docker exec -it laravel_{{PROJECT_NAME}} bash
+
+  composer:
+    description: Run Composer commands
+    command: docker exec -it laravel_{{PROJECT_NAME}} composer
+
+  npm:
+    description: Run NPM commands
+    command: docker exec -it laravel_{{PROJECT_NAME}} npm
+
+  test:
+    description: Run Pest tests
+    command: docker exec -it laravel_{{PROJECT_NAME}} php artisan test
+
+  migrate:
+    description: Run database migrations
+    command: docker exec -it laravel_{{PROJECT_NAME}} php artisan migrate
+
+  queue:
+    description: Start queue worker
+    command: docker exec -it laravel_{{PROJECT_NAME}} php artisan queue:work
+
+  tinker:
+    description: Open Laravel Tinker
+    command: docker exec -it laravel_{{PROJECT_NAME}} php artisan tinker
+
+  db:
+    description: Access database CLI
+    command: docker exec -it db_{{PROJECT_NAME}} mysql -u {{DB_USER}} -p{{DB_PASSWORD}} {{DB_NAME}}
+
+  redis:
+    description: Access Redis CLI
+    command: docker exec -it redis_{{PROJECT_NAME}} redis-cli

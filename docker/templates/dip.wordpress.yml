@@ -1,0 +1,58 @@
+version: '7.1'
+
+# DIP configuration for WordPress project: {{PROJECT_NAME}}
+# Usage from project directory:
+#   dip up          - Start all services
+#   dip down        - Stop all services
+#   dip logs        - View logs
+#   dip wp <cmd>    - Run WP-CLI commands
+
+environment:
+  COMPOSE_PROJECT_NAME: {{PROJECT_NAME}}
+  COMPOSE_FILE: ../../docker/docker-compose.wordpress.yml
+  APP_ID: {{PROJECT_NAME}}
+  PROJECT_DOMAIN: {{PROJECT_DOMAIN}}
+  DB_NAME: {{DB_NAME}}
+  DB_USER: {{DB_USER}}
+  DB_PASSWORD: {{DB_PASSWORD}}
+
+interaction:
+  up:
+    description: Start WordPress services
+    command: docker-compose up -d
+
+  down:
+    description: Stop WordPress services
+    command: docker-compose down
+
+  restart:
+    description: Restart WordPress services
+    command: docker-compose restart
+
+  logs:
+    description: View service logs
+    command: docker-compose logs -f
+
+  clean:
+    description: Stop and remove volumes
+    command: docker-compose down -v
+
+  wp:
+    description: Run WP-CLI commands
+    command: docker exec -it php_{{PROJECT_NAME}} wp --allow-root
+
+  shell:
+    description: Access PHP container shell
+    command: docker exec -it php_{{PROJECT_NAME}} bash
+
+  db:
+    description: Access database CLI
+    command: docker exec -it db_{{PROJECT_NAME}} mysql -u {{DB_USER}} -p{{DB_PASSWORD}} {{DB_NAME}}
+
+  composer:
+    description: Run Composer commands
+    command: docker exec -it php_{{PROJECT_NAME}} composer
+
+  status:
+    description: Check WordPress installation status
+    command: docker exec -it php_{{PROJECT_NAME}} wp core is-installed --allow-root && echo "WordPress is installed" || echo "WordPress is NOT installed"
