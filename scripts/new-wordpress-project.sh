@@ -53,8 +53,8 @@ echo "   If you have a private GitHub repository, you'll need a GitHub token."
 echo "   Get one from: https://github.com/settings/tokens"
 echo "   Note: Your repository should have a composer.json file for proper installation."
 
-# Check if GitHub token is already configured
-if grep -q "GITHUB_AUTH_TOKEN=ghp_" "$BASE_DIR/docker/.env"; then
+# Check if GitHub token is already configured (supports ghp_ and github_pat_ prefixes)
+if grep -qE "GITHUB_AUTH_TOKEN=(ghp_|github_pat_)" "$BASE_DIR/docker/.env"; then
     # Extract the existing token from .env file
     GITHUB_TOKEN=$(grep "GITHUB_AUTH_TOKEN=" "$BASE_DIR/docker/.env" | cut -d'=' -f2)
     echo "✅  Using existing GitHub token from .env file"
