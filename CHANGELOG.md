@@ -5,6 +5,13 @@ All notable changes to the WP-Local Docker environment will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1](https://github.com/mnestorov/wp-local/compare/v1.2.0...v1.2.1) (2026-02-05)
+
+
+### Bug Fixes
+
+* support github_pat_ fine-grained tokens in addition to ghp_ classic tokens ([f15dcf7](https://github.com/mnestorov/wp-local/commit/f15dcf782976ba76cefa16dd1e39dc910d6ed21a))
+
 # [1.2.0](https://github.com/mnestorov/wp-local/compare/v1.1.0...v1.2.0) (2025-10-22)
 
 
