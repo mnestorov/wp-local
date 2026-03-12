@@ -55,7 +55,7 @@ interaction:
 
   migrate:
     description: Run Prisma migrations
-    command: docker exec -it app_{{PROJECT_NAME}} npx prisma migrate dev --config prisma.config.ts
+    command: docker exec -it app_{{PROJECT_NAME}} npx prisma migrate dev --config prisma.config.ts --name
 
   seed:
     description: Run seeders
