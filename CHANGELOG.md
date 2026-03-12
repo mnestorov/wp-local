@@ -5,6 +5,13 @@ All notable changes to the WP-Local Docker environment will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [1.3.0](https://github.com/mnestorov/wp-local/compare/v1.2.1...v1.3.0) (2026-03-12)
+
+
+### Features
+
+* add Next.js support with Docker configuration ([3b21b99](https://github.com/mnestorov/wp-local/commit/3b21b9901d9c25dc54a0d56ca9df60ae20c1a796))
+
 ## [1.2.1](https://github.com/mnestorov/wp-local/compare/v1.2.0...v1.2.1) (2026-02-05)
 
 
