@@ -49,8 +49,11 @@ if [ -f "$PROJECT_PATH/artisan" ] && [ -f "$PROJECT_PATH/composer.json" ]; then
 elif [ -f "$PROJECT_PATH/wp-config.php" ] || [ -f "$PROJECT_PATH/wp/wp-config.php" ]; then
     PROJECT_TYPE="wordpress"
     print_success "Detected WordPress project"
+elif [ -f "$PROJECT_PATH/next.config.ts" ] || [ -f "$PROJECT_PATH/next.config.js" ] || [ -f "$PROJECT_PATH/next.config.mjs" ]; then
+    PROJECT_TYPE="nextjs"
+    print_success "Detected Next.js project"
 else
-    print_error "Could not determine project type. Looking for Laravel (artisan) or WordPress (wp-config.php) files."
+    print_error "Could not determine project type. Looking for Laravel (artisan), WordPress (wp-config.php), or Next.js (next.config.*) files."
     exit 1
 fi
 
@@ -77,7 +80,7 @@ elif [ "$PROJECT_TYPE" == "wordpress" ]; then
     if [ -f ".env.wordpress" ]; then
         cp ".env.wordpress" ".env"
         print_success "Using WordPress environment configuration"
-        
+
         # Update APP_ID and PROJECT_DOMAIN in .env
         sed -i.bak "s/APP_ID=smartyapp/APP_ID=$PROJECT_NAME/" .env
         sed -i.bak "s/PROJECT_DOMAIN=smartyapp.test/PROJECT_DOMAIN=$PROJECT_NAME.test/" .env
@@ -85,10 +88,28 @@ elif [ "$PROJECT_TYPE" == "wordpress" ]; then
         sed -i.bak "s/DB_USER=smartyapp/DB_USER=$PROJECT_NAME/" .env
         sed -i.bak "s/DB_PASSWORD=smartyapp/DB_PASSWORD=$PROJECT_NAME/" .env
         rm .env.bak
-        
+
         COMPOSE_FILE="docker-compose.wordpress.yml"
     else
         print_error ".env.wordpress file not found!"
+        exit 1
+    fi
+elif [ "$PROJECT_TYPE" == "nextjs" ]; then
+    if [ -f ".env.nextjs" ]; then
+        cp ".env.nextjs" ".env"
+        print_success "Using Next.js environment configuration"
+
+        # Update APP_ID and PROJECT_DOMAIN in .env
+        sed -i.bak "s/APP_ID=smartynext/APP_ID=$PROJECT_NAME/" .env
+        sed -i.bak "s/PROJECT_DOMAIN=smartynext.test/PROJECT_DOMAIN=$PROJECT_NAME.test/" .env
+        sed -i.bak "s/DB_NAME=smartynext/DB_NAME=$PROJECT_NAME/" .env
+        sed -i.bak "s/DB_USER=smartynext/DB_USER=$PROJECT_NAME/" .env
+        sed -i.bak "s/DB_PASSWORD=smartynext/DB_PASSWORD=$PROJECT_NAME/" .env
+        rm .env.bak
+
+        COMPOSE_FILE="docker-compose.nextjs.yml"
+    else
+        print_error ".env.nextjs file not found!"
         exit 1
     fi
 fi
@@ -108,9 +129,14 @@ elif [ "$PROJECT_TYPE" == "wordpress" ]; then
     DB_NAME="$(echo "$PROJECT_NAME" | cut -c1-2)_$PROJECT_NAME"
     DB_USER="${PROJECT_NAME}_user"
     DB_PASSWORD="${PROJECT_NAME}_pass"
+elif [ "$PROJECT_TYPE" == "nextjs" ]; then
+    DIP_TEMPLATE="templates/dip.nextjs.yml"
+    DB_NAME="$PROJECT_NAME"
+    DB_USER="$PROJECT_NAME"
+    DB_PASSWORD="$PROJECT_NAME"
 fi
 
-if [ -f "$DIP_TEMPLATE" ]; then
+if [ -n "$DIP_TEMPLATE" ] && [ -f "$DIP_TEMPLATE" ]; then
     # Copy template and replace placeholders
     sed -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
         -e "s/{{PROJECT_DOMAIN}}/$PROJECT_NAME.test/g" \
@@ -122,7 +148,7 @@ if [ -f "$DIP_TEMPLATE" ]; then
     print_success "Created dip.yml in project directory"
     print_info "You can now use DIP commands from $PROJECT_PATH/"
     print_info "Example: cd $PROJECT_PATH && dip up"
-else
+elif [ -n "$DIP_TEMPLATE" ]; then
     print_warning "DIP template not found at $DIP_TEMPLATE"
 fi
 
@@ -145,19 +171,28 @@ if [ $? -eq 0 ]; then
         print_info "Installing Laravel dependencies..."
         docker exec "laravel_$PROJECT_NAME" composer install --no-interaction
         docker exec "laravel_$PROJECT_NAME" php artisan key:generate --no-interaction
-        
+
         print_info "Setting up database..."
         # Wait for database to be ready
         sleep 5
-        
+
         # Create database user and database
         docker exec "db_$PROJECT_NAME" mysql -u root -proot -e "CREATE USER '$PROJECT_NAME'@'%' IDENTIFIED BY '$PROJECT_NAME';" 2>/dev/null || true
         docker exec "db_$PROJECT_NAME" mysql -u root -proot -e "CREATE DATABASE IF NOT EXISTS $PROJECT_NAME;" 2>/dev/null || true
         docker exec "db_$PROJECT_NAME" mysql -u root -proot -e "GRANT ALL PRIVILEGES ON $PROJECT_NAME.* TO '$PROJECT_NAME'@'%';" 2>/dev/null || true
         docker exec "db_$PROJECT_NAME" mysql -u root -proot -e "FLUSH PRIVILEGES;" 2>/dev/null || true
-        
+
         print_info "Running migrations..."
         docker exec "laravel_$PROJECT_NAME" php artisan migrate --no-interaction
+    elif [ "$PROJECT_TYPE" == "nextjs" ]; then
+        print_info "Waiting for PostgreSQL to be ready..."
+        sleep 5
+
+        print_info "Running Prisma migrations..."
+        docker exec "app_$PROJECT_NAME" npx prisma migrate dev --config prisma.config.ts --name init --skip-generate 2>/dev/null || true
+
+        print_info "Running seeders..."
+        docker exec "app_$PROJECT_NAME" npx tsx scripts/seeders/seed-admin.ts 2>/dev/null || true
     fi
 else
     print_error "Failed to start project!"

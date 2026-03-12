@@ -1,0 +1,74 @@
+version: '7.1'
+
+# DIP configuration for Next.js project: {{PROJECT_NAME}}
+# Usage from project directory:
+#   dip up          - Start all services
+#   dip down        - Stop all services
+#   dip logs        - View logs
+#   dip prisma      - Run Prisma commands
+
+environment:
+  COMPOSE_PROJECT_NAME: {{PROJECT_NAME}}
+  COMPOSE_FILE: ../../docker/docker-compose.nextjs.yml
+  APP_ID: {{PROJECT_NAME}}
+  PROJECT_DOMAIN: {{PROJECT_DOMAIN}}
+  DB_NAME: {{DB_NAME}}
+  DB_USER: {{DB_USER}}
+  DB_PASSWORD: {{DB_PASSWORD}}
+
+interaction:
+  up:
+    description: Start Next.js services
+    command: docker-compose up -d
+
+  down:
+    description: Stop Next.js services
+    command: docker-compose down
+
+  restart:
+    description: Restart Next.js services
+    command: docker-compose restart
+
+  logs:
+    description: View service logs
+    command: docker-compose logs -f
+
+  clean:
+    description: Stop and remove volumes
+    command: docker-compose down -v
+
+  shell:
+    description: Access app container shell
+    command: docker exec -it app_{{PROJECT_NAME}} sh
+
+  npm:
+    description: Run NPM commands
+    command: docker exec -it app_{{PROJECT_NAME}} npm
+
+  npx:
+    description: Run npx commands
+    command: docker exec -it app_{{PROJECT_NAME}} npx
+
+  prisma:
+    description: Run Prisma commands
+    command: docker exec -it app_{{PROJECT_NAME}} npx prisma
+
+  migrate:
+    description: Run Prisma migrations
+    command: docker exec -it app_{{PROJECT_NAME}} npx prisma migrate dev --config prisma.config.ts
+
+  seed:
+    description: Run seeders
+    command: docker exec -it app_{{PROJECT_NAME}} npx tsx scripts/seeders/seed-admin.ts
+
+  build:
+    description: Run production build
+    command: docker exec -it app_{{PROJECT_NAME}} npm run build
+
+  lint:
+    description: Run ESLint
+    command: docker exec -it app_{{PROJECT_NAME}} npm run lint
+
+  db:
+    description: Access PostgreSQL CLI
+    command: docker exec -it db_{{PROJECT_NAME}} psql -U {{DB_USER}} -d {{DB_NAME}}

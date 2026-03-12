@@ -1,0 +1,123 @@
+services:
+  app:
+    platform: linux/amd64
+    image: node:22-alpine
+    container_name: app_${APP_ID}
+    working_dir: /var/www/html
+    command: sh -c "npm install && npx prisma generate --config prisma.config.ts && npm run dev"
+    volumes:
+      - ../www/${APP_ID}:/var/www/html
+      - node_modules:/var/www/html/node_modules
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      APP_URL: https://${PROJECT_DOMAIN}
+      NEXT_PUBLIC_APP_URL: https://${PROJECT_DOMAIN}
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      SMTP_FROM: "WPSentry <noreply@${PROJECT_DOMAIN}>"
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+      CRON_SECRET: ${CRON_SECRET:-dev-cron-secret}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${APP_ID}.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.routers.${APP_ID}.entrypoints=web"
+      - "traefik.http.routers.${APP_ID}-secure.rule=Host(`${PROJECT_DOMAIN}`)"
+      - "traefik.http.routers.${APP_ID}-secure.entrypoints=websecure"
+      - "traefik.http.routers.${APP_ID}-secure.tls=true"
+      - "traefik.http.services.${APP_ID}.loadbalancer.server.port=3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - web
+
+  db:
+    platform: linux/amd64
+    image: postgres:16-alpine
+    container_name: db_${APP_ID}
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ../www/${APP_ID}/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - web
+
+  mailhog:
+    platform: linux/amd64
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailpit.rule=Host(`mailpit.test`)"
+      - "traefik.http.routers.mailpit.entrypoints=web"
+      - "traefik.http.routers.mailpit-secure.rule=Host(`mailpit.test`)"
+      - "traefik.http.routers.mailpit-secure.entrypoints=websecure"
+      - "traefik.http.routers.mailpit-secure.tls=true"
+      - "traefik.http.services.mailpit.loadbalancer.server.port=8025"
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - web
+
+  adminer:
+    platform: linux/amd64
+    image: adminer:latest
+    container_name: adminer
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.test`)"
+      - "traefik.http.routers.adminer.entrypoints=web"
+      - "traefik.http.routers.adminer-secure.rule=Host(`adminer.test`)"
+      - "traefik.http.routers.adminer-secure.entrypoints=websecure"
+      - "traefik.http.routers.adminer-secure.tls=true"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
+    depends_on:
+      - db
+    networks:
+      - web
+
+  traefik:
+    image: traefik:v3.5
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.file.filename=/etc/traefik/dynamic.yml"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ../traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ../traefik/certs:/etc/traefik/certs:ro
+    networks:
+      - web
+
+volumes:
+  node_modules:
+
+networks:
+  web:
+    external: false
