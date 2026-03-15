@@ -5,6 +5,13 @@ All notable changes to the WP-Local Docker environment will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.2](https://github.com/mnestorov/wp-local/compare/v1.3.1...v1.3.2) (2026-03-15)
+
+
+### Bug Fixes
+
+* update Traefik image to latest and improve Docker socket handling ([e84094a](https://github.com/mnestorov/wp-local/commit/e84094a46627b08a253016187cacfc5e3f57cd8f))
+
 ## [1.3.1](https://github.com/mnestorov/wp-local/compare/v1.3.0...v1.3.1) (2026-03-12)
 
 
