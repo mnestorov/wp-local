@@ -93,8 +93,10 @@ services:
       - web
 
   traefik:
-    image: traefik:v3.5
+    image: traefik:latest
     container_name: traefik
+    environment:
+      - DOCKER_API_VERSION=1.44
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -108,7 +110,7 @@ services:
       - "443:443"
       - "8080:8080"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
       - ../traefik/traefik.yml:/etc/traefik/traefik.yml
       - ../traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
       - ../traefik/certs:/etc/traefik/certs:ro

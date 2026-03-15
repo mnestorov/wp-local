@@ -152,6 +152,17 @@ elif [ -n "$DIP_TEMPLATE" ]; then
     print_warning "DIP template not found at $DIP_TEMPLATE"
 fi
 
+# Detect Docker socket path dynamically
+if [ -S "$HOME/.docker/run/docker.sock" ]; then
+    export DOCKER_SOCK="$HOME/.docker/run/docker.sock"
+elif [ -S "/var/run/docker.sock" ]; then
+    export DOCKER_SOCK="/var/run/docker.sock"
+else
+    print_error "Docker socket not found! Is Docker running?"
+    exit 1
+fi
+print_info "Using Docker socket: $DOCKER_SOCK"
+
 # Stop any running containers
 print_info "Stopping existing containers..."
 docker-compose -f "$COMPOSE_FILE" down --remove-orphans 2>/dev/null || true
